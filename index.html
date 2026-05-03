@@ -6,43 +6,52 @@
 <title>残機何機？</title>
 
 <style>
+* {
+  box-sizing: border-box;
+}
+
 body {
   margin: 0;
+  min-height: 100vh;
   font-family: "Courier New", monospace;
-  background: radial-gradient(circle, #222 0%, #050505 80%);
+  background:
+    linear-gradient(rgba(0,0,0,0.65), rgba(0,0,0,0.9)),
+    radial-gradient(circle at top, #2b2b2b, #050505 75%);
   color: #00ff99;
   text-align: center;
 }
 
 .container {
-  max-width: 420px;
+  width: 100%;
+  max-width: 430px;
   margin: 0 auto;
-  padding: 24px;
+  padding: 24px 16px;
 }
 
 .title {
-  font-size: 36px;
+  font-size: 42px;
   color: #ffcc00;
-  text-shadow: 3px 3px #ff0066;
-  margin-top: 30px;
+  text-shadow: 3px 3px #ff0066, 0 0 12px #ffcc00;
+  margin: 24px 0 8px;
 }
 
 .subtitle {
-  color: white;
-  margin-bottom: 24px;
+  color: #fff;
+  margin-bottom: 20px;
 }
 
 .box {
-  border: 3px solid #00ff99;
   background: #111;
+  border: 3px solid #00ff99;
+  border-radius: 14px;
   padding: 18px;
   margin: 16px 0;
-  border-radius: 12px;
-  box-shadow: 0 0 15px #00ff99;
+  box-shadow: 0 0 18px rgba(0,255,153,0.7);
 }
 
 button {
   font-family: "Courier New", monospace;
+  font-weight: bold;
   font-size: 18px;
   padding: 12px 18px;
   margin: 8px;
@@ -51,6 +60,7 @@ button {
   color: #ffcc00;
   border-radius: 10px;
   cursor: pointer;
+  box-shadow: 0 0 10px rgba(255,204,0,0.4);
 }
 
 button:hover {
@@ -59,28 +69,51 @@ button:hover {
 }
 
 input {
-  font-size: 20px;
-  width: 80px;
+  width: 90px;
+  font-size: 22px;
   text-align: center;
   padding: 8px;
+  border-radius: 8px;
+  border: 2px solid #00ff99;
+  background: #000;
+  color: #00ff99;
 }
 
 .suit {
-  font-size: 28px;
-  width: 80px;
+  width: 78px;
   height: 70px;
-}
-
-.player, .result {
-  border: 1px solid #00ff99;
-  padding: 10px;
-  margin: 8px;
-  border-radius: 8px;
-  color: white;
+  font-size: 30px;
 }
 
 .hidden {
   display: none;
+}
+
+.player,
+.result-card {
+  border: 1px solid #00ff99;
+  color: white;
+  padding: 10px;
+  margin: 8px 0;
+  border-radius: 8px;
+  background: #050505;
+}
+
+.winner {
+  border: 2px solid #ffcc00;
+  box-shadow: 0 0 16px #ffcc00;
+  color: #ffcc00;
+}
+
+.log {
+  color: white;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.small {
+  font-size: 13px;
+  color: #ccc;
 }
 </style>
 </head>
@@ -93,28 +126,30 @@ input {
 
   <div id="startScreen">
     <h1 class="title">残機何機？</h1>
-    <p class="subtitle">絵柄予想カードゲーム</p>
+    <p class="subtitle">RETRO CARD GUESS GAME</p>
 
     <div class="box">
       <h2>ルール説明</h2>
-      <p>参加者は全員500ポイントからスタート。</p>
-      <p>順番にトランプの絵柄を予想する。</p>
-      <p>当たれば +100ポイント。</p>
-      <p>外れたら -100ポイント。</p>
-      <p>誰かが0ポイントになるか、山札がなくなったら終了。</p>
-      <p>最後にポイント順で結果が表示される。</p>
+      <p>全員500ポイントからスタート。</p>
+      <p>順番にトランプの絵柄を予想。</p>
+      <p>当たれば <strong>+100POINT</strong></p>
+      <p>外れたら <strong>-100POINT</strong></p>
+      <p>誰かが0ポイント以下になるか、山札がなくなったら終了。</p>
+      <p>最後にランキング結果が表示される。</p>
     </div>
 
     <div class="box">
       <p>参加人数</p>
-      <input id="playerCount" type="number" value="3" min="1">
+      <input id="playerCount" type="number" min="1" max="10" value="3">
       <br>
       <button onclick="startGame()">ゲーム開始</button>
+      <p class="small">※BGMは開始ボタン後に再生されます</p>
     </div>
   </div>
 
   <div id="gameScreen" class="hidden">
     <h1 class="title">残機何機？</h1>
+
     <div class="box">
       <h2 id="turnText"></h2>
       <p id="deckText"></p>
@@ -130,10 +165,16 @@ input {
       <h2>現在のポイント</h2>
       <div id="players"></div>
     </div>
+
+    <div class="box">
+      <h2>ログ</h2>
+      <div id="log" class="log">ゲーム開始待ち</div>
+    </div>
   </div>
 
   <div id="resultScreen" class="hidden">
     <h1 class="title">GAME OVER</h1>
+
     <div class="box">
       <h2>最終結果</h2>
       <div id="resultText"></div>
@@ -172,13 +213,15 @@ function startGame() {
 
   document.getElementById("startScreen").classList.add("hidden");
   document.getElementById("gameScreen").classList.remove("hidden");
+  document.getElementById("resultScreen").classList.add("hidden");
 
   const bgm = document.getElementById("bgm");
-  bgm.volume = 0.5;
+  bgm.volume = 0.45;
   bgm.play().catch(() => {
-    console.log("BGM再生にはユーザー操作が必要です");
+    console.log("BGM再生はブラウザ制限で止まりました");
   });
 
+  writeLog("ゲーム開始。最初は " + players[currentPlayer].name + " の番。");
   updateScreen();
 }
 
@@ -193,10 +236,10 @@ function guess(selectedSuit) {
 
   if (selectedSuit === drawnSuit) {
     player.point += 100;
-    alert(player.name + " 正解！ 出た絵柄は " + drawnSuit + "。+100POINT");
+    writeLog(player.name + " 正解！ 予想：" + selectedSuit + " / 出た絵柄：" + drawnSuit + " / +100POINT");
   } else {
     player.point -= 100;
-    alert(player.name + " 不正解！ 出た絵柄は " + drawnSuit + "。-100POINT");
+    writeLog(player.name + " 不正解。予想：" + selectedSuit + " / 出た絵柄：" + drawnSuit + " / -100POINT");
   }
 
   if (player.point <= 0 || deck.length === 0) {
@@ -221,10 +264,18 @@ function updateScreen() {
 
   let html = "";
   players.forEach(player => {
-    html += `<div class="player">${player.name}：${player.point} POINT</div>`;
+    html += `
+      <div class="player">
+        ${player.name}：${player.point} POINT
+      </div>
+    `;
   });
 
   document.getElementById("players").innerHTML = html;
+}
+
+function writeLog(message) {
+  document.getElementById("log").textContent = message;
 }
 
 function showResult() {
@@ -237,9 +288,12 @@ function showResult() {
   const ranking = [...players].sort((a, b) => b.point - a.point);
 
   let html = "";
+
   ranking.forEach((player, index) => {
+    const winnerClass = index === 0 ? "winner" : "";
+
     html += `
-      <div class="result">
+      <div class="result-card ${winnerClass}">
         <h3>${index + 1}位</h3>
         <p>${player.name}</p>
         <p>${player.point} POINT</p>
