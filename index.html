@@ -2,77 +2,252 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>残機何機？</title>
+
 <style>
 body {
-  font-family: sans-serif;
-  text-align:center;
-  background:#111;
-  color:white;
+  margin: 0;
+  font-family: "Courier New", monospace;
+  background: radial-gradient(circle, #222 0%, #050505 80%);
+  color: #00ff99;
+  text-align: center;
 }
+
+.container {
+  max-width: 420px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.title {
+  font-size: 36px;
+  color: #ffcc00;
+  text-shadow: 3px 3px #ff0066;
+  margin-top: 30px;
+}
+
+.subtitle {
+  color: white;
+  margin-bottom: 24px;
+}
+
+.box {
+  border: 3px solid #00ff99;
+  background: #111;
+  padding: 18px;
+  margin: 16px 0;
+  border-radius: 12px;
+  box-shadow: 0 0 15px #00ff99;
+}
+
 button {
-  font-size:18px;
-  padding:10px;
-  margin:5px;
+  font-family: "Courier New", monospace;
+  font-size: 18px;
+  padding: 12px 18px;
+  margin: 8px;
+  border: 2px solid #ffcc00;
+  background: #111;
+  color: #ffcc00;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #ffcc00;
+  color: #111;
+}
+
+input {
+  font-size: 20px;
+  width: 80px;
+  text-align: center;
+  padding: 8px;
+}
+
+.suit {
+  font-size: 28px;
+  width: 80px;
+  height: 70px;
+}
+
+.player, .result {
+  border: 1px solid #00ff99;
+  padding: 10px;
+  margin: 8px;
+  border-radius: 8px;
+  color: white;
+}
+
+.hidden {
+  display: none;
 }
 </style>
 </head>
+
 <body>
 
-<h1>残機何機？</h1>
+<audio id="bgm" src="bgm.mp3" loop></audio>
 
-<div id="setup">
-  <p>人数</p>
-  <input id="playerCount" type="number" value="3">
-  <button onclick="startGame()">スタート</button>
-</div>
+<div class="container">
 
-<div id="game" style="display:none;">
-  <h2 id="turn"></h2>
-  <button onclick="guess('♠')">♠</button>
-  <button onclick="guess('♥')">♥</button>
-  <button onclick="guess('♦')">♦</button>
-  <button onclick="guess('♣')">♣</button>
+  <div id="startScreen">
+    <h1 class="title">残機何機？</h1>
+    <p class="subtitle">絵柄予想カードゲーム</p>
+
+    <div class="box">
+      <h2>ルール説明</h2>
+      <p>参加者は全員500ポイントからスタート。</p>
+      <p>順番にトランプの絵柄を予想する。</p>
+      <p>当たれば +100ポイント。</p>
+      <p>外れたら -100ポイント。</p>
+      <p>誰かが0ポイントになるか、山札がなくなったら終了。</p>
+      <p>最後にポイント順で結果が表示される。</p>
+    </div>
+
+    <div class="box">
+      <p>参加人数</p>
+      <input id="playerCount" type="number" value="3" min="1">
+      <br>
+      <button onclick="startGame()">ゲーム開始</button>
+    </div>
+  </div>
+
+  <div id="gameScreen" class="hidden">
+    <h1 class="title">残機何機？</h1>
+    <div class="box">
+      <h2 id="turnText"></h2>
+      <p id="deckText"></p>
+
+      <p>絵柄を予想しろ</p>
+      <button class="suit" onclick="guess('♠')">♠</button>
+      <button class="suit" onclick="guess('♥')">♥</button>
+      <button class="suit" onclick="guess('♦')">♦</button>
+      <button class="suit" onclick="guess('♣')">♣</button>
+    </div>
+
+    <div class="box">
+      <h2>現在のポイント</h2>
+      <div id="players"></div>
+    </div>
+  </div>
+
+  <div id="resultScreen" class="hidden">
+    <h1 class="title">GAME OVER</h1>
+    <div class="box">
+      <h2>最終結果</h2>
+      <div id="resultText"></div>
+      <button onclick="location.reload()">もう一度遊ぶ</button>
+    </div>
+  </div>
+
 </div>
 
 <script>
-let players=[], deck=[], turn=0;
+let players = [];
+let deck = [];
+let currentPlayer = 0;
 
-function startGame(){
-  const count = document.getElementById("playerCount").value;
-  players = Array.from({length:count}, (_,i)=>({p:500,n:"P"+(i+1)}));
+function startGame() {
+  const count = Number(document.getElementById("playerCount").value);
 
-  deck=[];
-  ["♠","♥","♦","♣"].forEach(s=>{
-    for(let i=0;i<13;i++) deck.push(s);
+  players = [];
+  for (let i = 1; i <= count; i++) {
+    players.push({
+      name: "Player " + i,
+      point: 500
+    });
+  }
+
+  deck = [];
+  const suits = ["♠", "♥", "♦", "♣"];
+
+  for (let i = 0; i < 13; i++) {
+    suits.forEach(suit => deck.push(suit));
+  }
+
+  deck.sort(() => Math.random() - 0.5);
+
+  currentPlayer = 0;
+
+  document.getElementById("startScreen").classList.add("hidden");
+  document.getElementById("gameScreen").classList.remove("hidden");
+
+  const bgm = document.getElementById("bgm");
+  bgm.volume = 0.5;
+  bgm.play().catch(() => {
+    console.log("BGM再生にはユーザー操作が必要です");
   });
 
-  deck.sort(()=>Math.random()-0.5);
-
-  document.getElementById("setup").style.display="none";
-  document.getElementById("game").style.display="block";
-
-  update();
+  updateScreen();
 }
 
-function guess(g){
-  let d = deck.pop();
-  let p = players[turn];
-
-  if(g===d){ p.p+=100 } else { p.p-=100 }
-
-  if(p.p<=0 || deck.length===0){
-    alert("ゲーム終了");
-    location.reload();
+function guess(selectedSuit) {
+  if (deck.length === 0) {
+    showResult();
     return;
   }
 
-  turn = (turn+1)%players.length;
-  update();
+  const drawnSuit = deck.pop();
+  const player = players[currentPlayer];
+
+  if (selectedSuit === drawnSuit) {
+    player.point += 100;
+    alert(player.name + " 正解！ 出た絵柄は " + drawnSuit + "。+100POINT");
+  } else {
+    player.point -= 100;
+    alert(player.name + " 不正解！ 出た絵柄は " + drawnSuit + "。-100POINT");
+  }
+
+  if (player.point <= 0 || deck.length === 0) {
+    showResult();
+    return;
+  }
+
+  currentPlayer++;
+  if (currentPlayer >= players.length) {
+    currentPlayer = 0;
+  }
+
+  updateScreen();
 }
 
-function update(){
-  document.getElementById("turn").innerText = players[turn].n + "の番";
+function updateScreen() {
+  document.getElementById("turnText").textContent =
+    players[currentPlayer].name + " の番";
+
+  document.getElementById("deckText").textContent =
+    "残り山札：" + deck.length + "枚";
+
+  let html = "";
+  players.forEach(player => {
+    html += `<div class="player">${player.name}：${player.point} POINT</div>`;
+  });
+
+  document.getElementById("players").innerHTML = html;
+}
+
+function showResult() {
+  document.getElementById("gameScreen").classList.add("hidden");
+  document.getElementById("resultScreen").classList.remove("hidden");
+
+  const bgm = document.getElementById("bgm");
+  bgm.pause();
+
+  const ranking = [...players].sort((a, b) => b.point - a.point);
+
+  let html = "";
+  ranking.forEach((player, index) => {
+    html += `
+      <div class="result">
+        <h3>${index + 1}位</h3>
+        <p>${player.name}</p>
+        <p>${player.point} POINT</p>
+      </div>
+    `;
+  });
+
+  document.getElementById("resultText").innerHTML = html;
 }
 </script>
 
