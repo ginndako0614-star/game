@@ -6,114 +6,65 @@
 <title>残機何機？</title>
 
 <style>
-* {
-  box-sizing: border-box;
-}
-
 body {
-  margin: 0;
-  min-height: 100vh;
-  font-family: "Courier New", monospace;
-  background:
-    linear-gradient(rgba(0,0,0,0.65), rgba(0,0,0,0.9)),
-    radial-gradient(circle at top, #2b2b2b, #050505 75%);
-  color: #00ff99;
-  text-align: center;
+  margin:0;
+  font-family:"Courier New", monospace;
+  background:#000;
+  color:#00ff99;
+  text-align:center;
 }
 
 .container {
-  width: 100%;
-  max-width: 430px;
-  margin: 0 auto;
-  padding: 24px 16px;
+  max-width:420px;
+  margin:0 auto;
+  padding:20px;
 }
 
 .title {
-  font-size: 42px;
-  color: #ffcc00;
-  text-shadow: 3px 3px #ff0066, 0 0 12px #ffcc00;
-  margin: 24px 0 8px;
-}
-
-.subtitle {
-  color: #fff;
-  margin-bottom: 20px;
+  font-size:40px;
+  color:#ffcc00;
+  text-shadow:3px 3px #ff0066;
 }
 
 .box {
-  background: #111;
-  border: 3px solid #00ff99;
-  border-radius: 14px;
-  padding: 18px;
-  margin: 16px 0;
-  box-shadow: 0 0 18px rgba(0,255,153,0.7);
+  border:2px solid #00ff99;
+  padding:15px;
+  margin:15px 0;
 }
 
 button {
-  font-family: "Courier New", monospace;
-  font-weight: bold;
-  font-size: 18px;
-  padding: 12px 18px;
-  margin: 8px;
-  border: 2px solid #ffcc00;
-  background: #111;
-  color: #ffcc00;
-  border-radius: 10px;
-  cursor: pointer;
-  box-shadow: 0 0 10px rgba(255,204,0,0.4);
-}
-
-button:hover {
-  background: #ffcc00;
-  color: #111;
+  font-size:18px;
+  padding:10px;
+  margin:5px;
+  background:#111;
+  color:#ffcc00;
+  border:2px solid #ffcc00;
 }
 
 input {
-  width: 90px;
-  font-size: 22px;
-  text-align: center;
-  padding: 8px;
-  border-radius: 8px;
-  border: 2px solid #00ff99;
-  background: #000;
-  color: #00ff99;
+  font-size:18px;
+  margin:5px;
+  padding:5px;
+  width:80%;
 }
+
+.hidden { display:none; }
 
 .suit {
-  width: 78px;
-  height: 70px;
-  font-size: 30px;
+  font-size:28px;
+  width:70px;
+  height:60px;
 }
 
-.hidden {
-  display: none;
-}
-
-.player,
-.result-card {
-  border: 1px solid #00ff99;
-  color: white;
-  padding: 10px;
-  margin: 8px 0;
-  border-radius: 8px;
-  background: #050505;
+.player, .result {
+  border:1px solid #00ff99;
+  margin:5px;
+  padding:5px;
 }
 
 .winner {
-  border: 2px solid #ffcc00;
-  box-shadow: 0 0 16px #ffcc00;
-  color: #ffcc00;
-}
-
-.log {
-  color: white;
-  font-size: 14px;
-  line-height: 1.5;
-}
-
-.small {
-  font-size: 13px;
-  color: #ccc;
+  color:#ffcc00;
+  font-size:22px;
 }
 </style>
 </head>
@@ -124,181 +75,143 @@ input {
 
 <div class="container">
 
-  <div id="startScreen">
-    <h1 class="title">残機何機？</h1>
-    <p class="subtitle">RETRO CARD GUESS GAME</p>
+<div id="start">
+  <h1 class="title">残機何機？</h1>
 
-    <div class="box">
-      <h2>ルール説明</h2>
-      <p>全員500ポイントからスタート。</p>
-      <p>順番にトランプの絵柄を予想。</p>
-      <p>当たれば <strong>+100POINT</strong></p>
-      <p>外れたら <strong>-100POINT</strong></p>
-      <p>誰かが0ポイント以下になるか、山札がなくなったら終了。</p>
-      <p>最後にランキング結果が表示される。</p>
-    </div>
-
-    <div class="box">
-      <p>参加人数</p>
-      <input id="playerCount" type="number" min="1" max="10" value="3">
-      <br>
-      <button onclick="startGame()">ゲーム開始</button>
-      <p class="small">※BGMは開始ボタン後に再生されます</p>
-    </div>
+  <div class="box">
+    <p>人数入力</p>
+    <input id="count" type="number" value="3">
+    <br>
+    <button onclick="createNames()">次へ</button>
   </div>
 
-  <div id="gameScreen" class="hidden">
-    <h1 class="title">残機何機？</h1>
+  <div id="namesBox" class="box hidden">
+    <div id="names"></div>
+    <button onclick="startGame()">ゲーム開始</button>
+  </div>
+</div>
 
-    <div class="box">
-      <h2 id="turnText"></h2>
-      <p id="deckText"></p>
+<div id="game" class="hidden">
+  <h1 class="title">残機何機？</h1>
 
-      <p>絵柄を予想しろ</p>
-      <button class="suit" onclick="guess('♠')">♠</button>
-      <button class="suit" onclick="guess('♥')">♥</button>
-      <button class="suit" onclick="guess('♦')">♦</button>
-      <button class="suit" onclick="guess('♣')">♣</button>
-    </div>
+  <div class="box">
+    <h2 id="turn"></h2>
+    <p id="deck"></p>
 
-    <div class="box">
-      <h2>現在のポイント</h2>
-      <div id="players"></div>
-    </div>
-
-    <div class="box">
-      <h2>ログ</h2>
-      <div id="log" class="log">ゲーム開始待ち</div>
-    </div>
+    <button class="suit" onclick="guess('♠')">♠</button>
+    <button class="suit" onclick="guess('♥')">♥</button>
+    <button class="suit" onclick="guess('♦')">♦</button>
+    <button class="suit" onclick="guess('♣')">♣</button>
   </div>
 
-  <div id="resultScreen" class="hidden">
-    <h1 class="title">GAME OVER</h1>
-
-    <div class="box">
-      <h2>最終結果</h2>
-      <div id="resultText"></div>
-      <button onclick="location.reload()">もう一度遊ぶ</button>
-    </div>
+  <div class="box">
+    <div id="players"></div>
   </div>
+</div>
+
+<div id="result" class="hidden">
+  <h1 class="title">RESULT</h1>
+
+  <div id="resultText"></div>
+
+  <div class="box">
+
+    <p>🎧 音源</p>
+    <a href="https://www.tunecore.co.jp/artists?id=912693" target="_blank">
+      ▶ 大志の音源を聴く
+    </a>
+
+    <p style="margin-top:15px;">💰 サポート</p>
+    <a href="https://paypay.onelink.me/EUKm?pid=QRCode&link_key=https%3A%2F%2Fqr.paypay.ne.jp%2Fp2p01_IUmQGm0IxrWFLs0U&af_dp=paypay%3A%2F%2Fpayment&af_ios_url=https%3A%2F%2Fpaypay.ne.jp%2F&af_android_url=https%3A%2F%2Fpaypay.ne.jp%2F&af_web_dp=https%3A%2F%2Fpaypay.ne.jp%2F&af_force_deeplink=true" target="_blank">
+      ▶ 投げ銭する
+    </a>
+
+  </div>
+
+  <button onclick="location.reload()">もう一回</button>
+</div>
 
 </div>
 
 <script>
-let players = [];
-let deck = [];
-let currentPlayer = 0;
+let players=[], deck=[], turnIndex=0;
 
-function startGame() {
-  const count = Number(document.getElementById("playerCount").value);
+function createNames(){
+  let count = document.getElementById("count").value;
+  let html = "";
 
-  players = [];
-  for (let i = 1; i <= count; i++) {
-    players.push({
-      name: "Player " + i,
-      point: 500
-    });
+  for(let i=1;i<=count;i++){
+    html += `<input id="name${i}" placeholder="Player ${i}"><br>`;
   }
 
-  deck = [];
-  const suits = ["♠", "♥", "♦", "♣"];
+  document.getElementById("names").innerHTML = html;
+  document.getElementById("namesBox").classList.remove("hidden");
+}
 
-  for (let i = 0; i < 13; i++) {
-    suits.forEach(suit => deck.push(suit));
+function startGame(){
+  let count = document.getElementById("count").value;
+
+  players=[];
+  for(let i=1;i<=count;i++){
+    let name = document.getElementById("name"+i).value || "Player "+i;
+    players.push({name:name, point:500});
   }
 
-  deck.sort(() => Math.random() - 0.5);
-
-  currentPlayer = 0;
-
-  document.getElementById("startScreen").classList.add("hidden");
-  document.getElementById("gameScreen").classList.remove("hidden");
-  document.getElementById("resultScreen").classList.add("hidden");
-
-  const bgm = document.getElementById("bgm");
-  bgm.volume = 0.45;
-  bgm.play().catch(() => {
-    console.log("BGM再生はブラウザ制限で止まりました");
+  deck=[];
+  ["♠","♥","♦","♣"].forEach(s=>{
+    for(let i=0;i<13;i++) deck.push(s);
   });
 
-  writeLog("ゲーム開始。最初は " + players[currentPlayer].name + " の番。");
-  updateScreen();
+  deck.sort(()=>Math.random()-0.5);
+
+  document.getElementById("start").classList.add("hidden");
+  document.getElementById("game").classList.remove("hidden");
+
+  document.getElementById("bgm").play();
+
+  update();
 }
 
-function guess(selectedSuit) {
-  if (deck.length === 0) {
+function guess(g){
+  let d = deck.pop();
+  let p = players[turnIndex];
+
+  if(g===d){ p.point+=100; }
+  else{ p.point-=100; }
+
+  if(p.point<=0 || deck.length==0){
     showResult();
     return;
   }
 
-  const drawnSuit = deck.pop();
-  const player = players[currentPlayer];
-
-  if (selectedSuit === drawnSuit) {
-    player.point += 100;
-    writeLog(player.name + " 正解！ 予想：" + selectedSuit + " / 出た絵柄：" + drawnSuit + " / +100POINT");
-  } else {
-    player.point -= 100;
-    writeLog(player.name + " 不正解。予想：" + selectedSuit + " / 出た絵柄：" + drawnSuit + " / -100POINT");
-  }
-
-  if (player.point <= 0 || deck.length === 0) {
-    showResult();
-    return;
-  }
-
-  currentPlayer++;
-  if (currentPlayer >= players.length) {
-    currentPlayer = 0;
-  }
-
-  updateScreen();
+  turnIndex=(turnIndex+1)%players.length;
+  update();
 }
 
-function updateScreen() {
-  document.getElementById("turnText").textContent =
-    players[currentPlayer].name + " の番";
+function update(){
+  document.getElementById("turn").innerText = players[turnIndex].name + "の番";
+  document.getElementById("deck").innerText = "残り："+deck.length;
 
-  document.getElementById("deckText").textContent =
-    "残り山札：" + deck.length + "枚";
-
-  let html = "";
-  players.forEach(player => {
-    html += `
-      <div class="player">
-        ${player.name}：${player.point} POINT
-      </div>
-    `;
+  let html="";
+  players.forEach(p=>{
+    html += `<div class="player">${p.name}：${p.point}</div>`;
   });
 
   document.getElementById("players").innerHTML = html;
 }
 
-function writeLog(message) {
-  document.getElementById("log").textContent = message;
-}
+function showResult(){
+  document.getElementById("game").classList.add("hidden");
+  document.getElementById("result").classList.remove("hidden");
 
-function showResult() {
-  document.getElementById("gameScreen").classList.add("hidden");
-  document.getElementById("resultScreen").classList.remove("hidden");
+  document.getElementById("bgm").pause();
 
-  const bgm = document.getElementById("bgm");
-  bgm.pause();
+  let rank=[...players].sort((a,b)=>b.point-a.point);
 
-  const ranking = [...players].sort((a, b) => b.point - a.point);
-
-  let html = "";
-
-  ranking.forEach((player, index) => {
-    const winnerClass = index === 0 ? "winner" : "";
-
-    html += `
-      <div class="result-card ${winnerClass}">
-        <h3>${index + 1}位</h3>
-        <p>${player.name}</p>
-        <p>${player.point} POINT</p>
-      </div>
-    `;
+  let html="";
+  rank.forEach((p,i)=>{
+    let cls = i===0 ? "winner" : "";
+    html += `<div class="result ${cls}">${i+1}位 ${p.name}：${p.point}</div>`;
   });
 
   document.getElementById("resultText").innerHTML = html;
